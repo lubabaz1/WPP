@@ -5,11 +5,12 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.feature_selection import RFE
-from sklearn.svm import SVR
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn import tree
+from sklearn.model_selection import cross_val_score
+from matplotlib import pyplot
+
     
 #Import Data
 df = pd.read_csv("Data.csv")
@@ -36,12 +37,6 @@ X = df[features]
 y = df[labels]
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=.30)
 
-#RFE
-estimator = SVR(kernel="linear")
-selector = RFE(estimator, n_features_to_select=4, step=1)
-selector = selector.fit(X, y.values.ravel())
-#print(selector.support_)
-#print(selector.ranking_)
 
 l1=['Yes','No']
 prod=['Increased','Decreased']
@@ -56,8 +51,12 @@ def DecisionTree():
     
     #Feature Importance
     dtc.feature_importances_
+    print('|| Feature Importances in Decision Tree ||')
     df = pd.DataFrame({ 'Feature_names':X.columns, 'Importances':dtc.feature_importances_})
     print(df.sort_values(by='Importances',ascending=False))
+    
+    n = 2
+    print(" " * n)
     
     #Visualize the Decision Tree
     fig, axes = plt.subplots(figsize = (8,5), dpi=300)
@@ -65,10 +64,20 @@ def DecisionTree():
     tree.plot_tree(dtc)
     plt.show()
     fig.savefig('dtc.png')
-
+    
     #Predict
     y_pred=dtc.predict(X_test)
-    print('Accuracy: ',accuracy_score(y_test, y_pred))
+    acc= accuracy_score(y_test, y_pred)
+    print('|| Accuracy for Decision Tree ||',acc)
+    
+    n = 1
+    print(" " * n)
+    
+    scores = cross_val_score(dtc, X, y, cv=5)
+    print('Cross-Validation Accuracy Scores for Decision Tree', scores)
+    
+    n = 2
+    print(" " * n)
     
     #Read User Input
     pfeatures = [Feature1.get(),Feature2.get(),Feature3.get(),Feature4.get(),Feature5.get(),Feature6.get(),Feature7.get(),Feature8.get()]
@@ -105,10 +114,32 @@ def logisticregression():
     #Model
     lrc = LogisticRegression()
     lrc.fit(X,y.values.ravel())
+    print('|| Feature Importances in Logistic Regression ||')
+    #print('Intercept for Logistic Regression:', lrc.intercept_)
+    #print('Co-efficients for Logistic Regression:', lrc.coef_)
+    
+    # get importance
+    importance = lrc.coef_[0]
+    # summarize feature importance
+    for i,v in enumerate(importance):
+    	print('Feature: %0d, Score: %.5f' % (i,v))
+    # plot feature importance
+    pyplot.bar([x for x in range(len(importance))], importance)
+    pyplot.show()
+    
+    n = 2
+    print(" " * n)
     
     #Predict
     y_pred=lrc.predict(X_test)
-    print('Accuracy: ',accuracy_score(y_test, y_pred))
+    acc= accuracy_score(y_test, y_pred)
+    print('|| Accuracy for Logistic Regression ||',acc)
+    scores = cross_val_score(lrc, X, y.values.ravel(), cv=5)
+    
+    n = 1
+    print(" " * n)
+    
+    print('Cross-Validation Accuracy Scores for Logistic Regression', scores)
     
     #Read User Input
     pfeatures = [Feature1.get(),Feature2.get(),Feature3.get(),Feature4.get(),Feature5.get(),Feature6.get(),Feature7.get(),Feature8.get()]
