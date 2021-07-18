@@ -9,9 +9,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn import tree
 from sklearn.model_selection import cross_val_score
-from matplotlib import pyplot
 
-    
+   
 #Import Data
 df = pd.read_csv("Data.csv")
 features = ["Award_Work","Care-taker_WhileWorking","SP_Supp","Using_DCC","ComfyLeave_ChildSick","MatPat_Leave","Flex_Whours","Eval_WorkProduced"]
@@ -37,23 +36,36 @@ X = df[features]
 y = df[labels]
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=.30)
 
-
+#Creating options
 l1=['Yes','No']
 prod=['Increased','Decreased']
+#List containing all zeros- inputs will be appended
 l2=[]
 for i in range(0,len(features)):
     l2.append(0)
+
     
 def DecisionTree():
-    #Model
+    #Train/fit the Model
     dtc = tree.DecisionTreeClassifier(max_depth=5) 
     dtc = dtc.fit(X,y)
     
-    #Feature Importance
-    dtc.feature_importances_
+    # get importance
     print('|| Feature Importances in Decision Tree ||')
-    df = pd.DataFrame({ 'Feature_names':X.columns, 'Importances':dtc.feature_importances_})
-    print(df.sort_values(by='Importances',ascending=False))
+    importance = dtc.feature_importances_
+    # summarize feature importance
+    for i,v in enumerate(importance):
+        print('Feature: %0d, Score: %.5f' % (i,v))
+        
+    # plot feature importance
+    fig = plt.figure(figsize=(10,5))
+    fig.suptitle('Feature Importance of Decision Tree', fontsize=16)
+    plt.bar([x for x in range(len(importance))], importance)
+    plt.xlabel('Features',fontsize='11.5')
+    plt.ylabel('Importance',fontsize='11.5')
+    plt.show()
+    fig.savefig('Feature Importance of Decision Tree.jpg')
+
     
     n = 2
     print(" " * n)
@@ -65,23 +77,26 @@ def DecisionTree():
     plt.show()
     fig.savefig('dtc.png')
     
-    #Predict
+    #Make Predictions (testing)
     y_pred=dtc.predict(X_test)
+    #Measure Accuracy
     acc= accuracy_score(y_test, y_pred)
     print('|| Accuracy for Decision Tree ||',acc)
     
     n = 1
     print(" " * n)
     
+    #Cross Validation of DT
     scores = cross_val_score(dtc, X, y, cv=5)
     print('Cross-Validation Accuracy Scores for Decision Tree', scores)
     
     n = 2
     print(" " * n)
     
-    #Read User Input
+    #Read User Input for DT
     pfeatures = [Feature1.get(),Feature2.get(),Feature3.get(),Feature4.get(),Feature5.get(),Feature6.get(),Feature7.get(),Feature8.get()]
 
+    #Assign Values according to inputs/ Categorizing inputs
     for z in range(0,len(pfeatures)):
         if(pfeatures[z]=='Yes'):
             l2[z]=1
@@ -90,7 +105,9 @@ def DecisionTree():
         else:
             l2[z]=0
             
+    #List containing user inputs        
     inputtest = [l2]
+    #Validating user null inputs
     exist = 2 in l2
     if (exist == True):
         t1.delete("1.0", END)
@@ -99,6 +116,7 @@ def DecisionTree():
         predict = dtc.predict(inputtest)
         predicted=predict[0] 
     
+    #Displaying prediction for user inputs in text box for DT
         if(predicted==1.0):
             t1.delete("1.0", END)
             t1.insert(END, "Productivity Will Increase")
@@ -111,7 +129,7 @@ def DecisionTree():
     #print(text_representation)        
 
 def logisticregression():
-    #Model
+    #Train the Model
     lrc = LogisticRegression()
     lrc.fit(X,y.values.ravel())
     print('|| Feature Importances in Logistic Regression ||')
@@ -123,27 +141,37 @@ def logisticregression():
     # summarize feature importance
     for i,v in enumerate(importance):
     	print('Feature: %0d, Score: %.5f' % (i,v))
+        
     # plot feature importance
-    pyplot.bar([x for x in range(len(importance))], importance)
-    pyplot.show()
+    fig = plt.figure(figsize=(10,5))
+    fig.suptitle('Feature Importance of Logistic Regression', fontsize=16)
+    plt.bar([x for x in range(len(importance))], importance)
+    plt.xlabel('Features',fontsize='11.5')
+    plt.ylabel('Importance',fontsize='11.5')
+    plt.show()
+    fig.savefig('Feature Importances in Logistic Regression.jpg')
     
     n = 2
     print(" " * n)
     
-    #Predict
+    #Make Predictions (testing)
     y_pred=lrc.predict(X_test)
+    
+    #Measure Accuracy
     acc= accuracy_score(y_test, y_pred)
     print('|| Accuracy for Logistic Regression ||',acc)
-    scores = cross_val_score(lrc, X, y.values.ravel(), cv=5)
     
     n = 1
     print(" " * n)
     
+    #Cross validation in LR
+    scores = cross_val_score(lrc, X, y.values.ravel(), cv=5)
     print('Cross-Validation Accuracy Scores for Logistic Regression', scores)
     
-    #Read User Input
+    #Read User Input for LR
     pfeatures = [Feature1.get(),Feature2.get(),Feature3.get(),Feature4.get(),Feature5.get(),Feature6.get(),Feature7.get(),Feature8.get()]
 
+    #Assign Values according to inputs/ Categorizing inputs
     for z in range(0,len(pfeatures)):
         if(pfeatures[z]=='Yes'):
             l2[z]=1
@@ -151,8 +179,10 @@ def logisticregression():
             l2[z]=2
         else:
             l2[z]=0
-            
+    
+    #List containing user inputs        
     inputtest = [l2]
+    #Validating user null inputs
     exist = 2 in l2
     if (exist == True):
         t2.delete("1.0", END)
@@ -160,7 +190,8 @@ def logisticregression():
     else:
         predict = lrc.predict(inputtest)
         predicted=predict[0] 
-    
+        
+    #Displaying prediction for user inputs in text box for LR
         if(predicted==1.0):
             t2.delete("1.0", END)
             t2.insert(END, "Productivity Will Increase")
@@ -286,11 +317,11 @@ rfc = Button(root, text="PREDICT", command=logisticregression, fg="gray17", bg="
 rfc.config(font=("Roboto",10,"bold"))
 rfc.grid(row=21, column=0, columnspan=3)
 
-t1 = Text(root, height=1.3, width=22, bg="white",fg="black")
+t1 = Text(root, height=1.3, width=25, bg="white",fg="black")
 t1.config(font=("Roboto",10,"bold"))
 t1.grid(row=16, column=1, padx=20)
 
-t2 = Text(root, height=1.3, width=22, bg="white",fg="black")
+t2 = Text(root, height=1.3, width=25, bg="white",fg="black")
 t2.config(font=("Roboto",10,"bold"))
 t2.grid(row=20, column=1, padx=20)
 
